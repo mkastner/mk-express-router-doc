@@ -7,7 +7,13 @@
   "author": "Michael Kastner <kastner@galt.de>",
   "license": "MIT",
   "scripts": {
-    "test": "NODE_ENV=test node test/index.js | tap-spec"
+    "server": "NODE_ENV=development node server.js",
+    "test": "yarn test:index && yarn test:doc-buider",
+    "test:index": "NODE_ENV=test node test/index.test.js | tap-spec",
+    "test:doc-builder": "NODE_ENV=test node test/doc-builder.test.js | tap-spec"
+  },
+  "peerDependencies": {
+    "express": "^4.17.1"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",

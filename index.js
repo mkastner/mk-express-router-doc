@@ -1,17 +1,49 @@
 const express = require('express');
 const path = require('path');
 
-function methodEventObject(method, context, ...args) {
-  const result = { method };
+function pathToRoot(context) {
+
+  let parent = context;
+  const pathItems = []; 
+
+  while (parent) {
+    pathItems.push(parent.path);
+    parent = parent.parent; 
+  }
+ 
+  pathItems.reverse();
+
+  return path.join(...pathItems);
+} 
+
+function extractDocItem(contextArgs) {
+
+  const lastArgsItem = contextArgs[contextArgs.length - 1];
+
+  if (!lastArgsItem) return false;
+  if (lastArgsItem.DocItem) {
+    contextArgs.pop(); 
+    return lastArgsItem;
+  } 
+  return false;
+}
+
+function methodEventObject(method, context, docItem, ...args) {
+
+
+  const result = { method, docItem: {} };
+  Object.assign(result.docItem, docItem); 
 
   if (typeof args[0] === 'string') {
     result.path = args[0];
-    result.fullPath = path.join(context.fullPath(), args[0]);
+    result.fullPath = path.join(pathToRoot(context), args[0]);
   }
+  console.log('result', result);
   return result;
 }
 
-module.exports = function ExtendedRouter(event) {
+
+module.exports = function ExpressRouterDoc(event) {
 
   const obj = {
     router: express.Router(),
@@ -19,10 +51,11 @@ module.exports = function ExtendedRouter(event) {
     parent: null,
     use(...args) {
 
-      const result = { };
+      const result = { 
+        docItem: {}
+      };
 
       if (typeof args[0] === 'string') {
-        this.path = args[0];
         result.path = args[0];
 
         // if args[1] has router
@@ -32,70 +65,76 @@ module.exports = function ExtendedRouter(event) {
         if (args[1].router) {
         
           args[1].parent = this;
+          args[1].path = args[0];
 
-          args[1] = args[1].router;
 
-          result.fullPath = this.fullPath(); 
+          result.fullPath = pathToRoot(args[1]);
+          //console.log('args[1].parent.path',args[1].parent.path);
           result.type = 'router';
+          
+          // make router second argument
+          // instead of ExpressRouterDoc
+          args[1] = args[1].router;
         } else {
           result.type = 'middleware';
+          result.fullPath = path.join(pathToRoot(this), args[0]);
+          result.name = args[1].name; 
         }
       }
-
+     
+      const docItem = extractDocItem(args);
+      if (docItem) {
+        Object.assign(result.docItem, docItem);
+      } 
       event.fire('use', result);
-
       this.router.use(...args); 
       return this; 
     },
-    fullPath() {
-
-      if (this.parent) {
-
-        const parentPath = this.parent.fullPath();
-        const thisPath = this.path;
-        const joinedPath = path.join(parentPath, thisPath);
-
-        return joinedPath;
-      }
-      return this.path;
-    },
     get(...args) {
-      event.fire('req', methodEventObject('get', this, ...args)); 
+      const docItem = extractDocItem(args);
+      event.fire('req', methodEventObject('get', this, docItem, ...args)); 
       this.router.get(...args); 
       return this; 
     }, 
     put(...args) {
-      event.fire('req', methodEventObject('put', this, ...args)); 
+      const docItem = extractDocItem(args);
+      event.fire('req', methodEventObject('put', this, docItem, ...args)); 
       this.router.put(...args); 
       return this; 
     }, 
     post(...args) {
-      event.fire('req', methodEventObject('post', this, ...args)); 
+      const docItem = extractDocItem(args);
+      event.fire('req', methodEventObject('post', this, docItem, ...args)); 
       this.router.post(...args); 
       return this; 
     }, 
     patch(...args) {
-      event.fire('req', methodEventObject('patch', this, ...args)); 
+      const docItem = extractDocItem(args);
+      event.fire('req', methodEventObject('patch', this, docItem, ...args)); 
       this.router.patch(...args); 
       return this; 
     }, 
     head(...args) {
-      event.fire('req', methodEventObject('head', this, ...args)); 
+      const docItem = extractDocItem(args);
+      event.fire('req', methodEventObject('head', this, docItem, ...args)); 
       this.router.head(...args); 
       return this; 
     },   
     delete(...args) {
-      event.fire('req', methodEventObject('delete', this, ...args)); 
+      const docItem = extractDocItem(args);
+      event.fire('req', methodEventObject('delete', this, docItem, ...args)); 
       this.router.delete(...args); 
       return this; 
     }, 
     options(...args) {
-      event.fire('req', methodEventObject('options', this, ...args)); 
+      const docItem = extractDocItem(args);
+      event.fire('req', methodEventObject('options', this, docItem, ...args)); 
       this.router.options(...args); 
       return this; 
     }, 
     trace(...args) {
-      event.fire('req', methodEventObject('trace', this, ...args)); 
+      const docItem = extractDocItem(args);
+      event.fire('req', methodEventObject('trace', this, docItem, ...args)); 
       this.router.trace(...args); 
       return this; 
     },

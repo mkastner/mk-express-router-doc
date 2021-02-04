@@ -1,8 +1,9 @@
 const tape = require('tape');
 const ExpressRouterDoc = require('../index');
 const Event = require('../lib/event');
+const DocBuilder = require('../lib/doc-builder');
 
-tape('Extended Router', (t) => {
+tape('Express Router Doc', (t) => {
   const event = Event(); 
   const rootRouter = ExpressRouterDoc(event);
   const usersRouter = ExpressRouterDoc(event);
