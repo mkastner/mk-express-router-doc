@@ -38,7 +38,6 @@ function methodEventObject(method, context, docItem, ...args) {
     result.path = args[0];
     result.fullPath = path.join(pathToRoot(context), args[0]);
   }
-  console.log('result', result);
   return result;
 }
 
@@ -69,7 +68,6 @@ module.exports = function ExpressRouterDoc(event) {
 
 
           result.fullPath = pathToRoot(args[1]);
-          //console.log('args[1].parent.path',args[1].parent.path);
           result.type = 'router';
           
           // make router second argument
