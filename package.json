@@ -1,6 +1,6 @@
 {
   "name": "mk-express-router-doc",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "An evented documentation wrapper for the express js router",
   "main": "index.js",
   "repository": "https://github.com/mkastner/mk-express-router-doc.git",
