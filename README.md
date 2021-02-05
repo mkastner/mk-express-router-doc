@@ -12,6 +12,4 @@ yarn server
 
 Then
 
-```
 [Link to demo doc page at http://localhost:3000](http://localhost:3000)
-```
